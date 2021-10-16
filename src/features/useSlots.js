@@ -10,36 +10,43 @@ export const KANARIA_ITEMS_COLLECTIONS_IDS = {
 export const birdSlots = [
   {
     id: 'background',
+    img: '/background_slot.svg',
     collection: 'background',
     label: 'Background',
   },
   {
     id: 'foreground',
+    img: '/foreground_slot.svg',
     collection: 'foreground',
     label: 'Foreground',
   },
   {
     id: 'headwear',
+    img: '/headwear_slot.svg',
     collection: 'headwear',
     label: 'Headwear',
   },
   {
     id: 'objectleft',
+    img: '/objectleft_slot.svg',
     collection: 'handheld',
     label: 'Hand left',
   },
   {
     id: 'objectright',
+    img: '/objectright_slot.svg',
     collection: 'handheld',
     label: 'Hand Right',
   },
   {
     id: 'necklace',
+    img: '/necklace_slot.svg',
     collection: 'necklace',
     label: 'Necklace',
   },
   {
     id: 'backpack',
+    img: '/backpack_slot.svg',
     collection: 'backpack',
     label: 'Backpack',
   },

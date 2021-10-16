@@ -71,19 +71,19 @@ const equipItem = (item) => {
   <div>
     <div
       class="grid flex-1 gap-4 justify-items-center"
-      style="grid-template-columns: repeat(auto-fit, minmax(90px, 1fr))"
+      style="grid-template-columns: repeat(auto-fit, minmax(38px, 1fr))"
     >
       <button
         v-for="slot in birdSlots"
         :key="slot.id"
-        class="flex items-center justify-center w-full py-2 bg-white border-2 rounded-3xl whitespace-nowrap"
+        class="flex items-center justify-center w-full bg-white border-2 rounded-md whitespace-nowrap"
         :class="{
-          'hover:bg-indigo-50': !isActiveSlot(slot),
-          'bg-indigo-500 text-white hover:bg-indigo-400': isActiveSlot(slot),
+          'hover:bg-yellow-100': !isActiveSlot(slot),
+          'bg-yellow-500 text-white hover:bg-yellow-400': isActiveSlot(slot),
         }"
         @click="onChooseSlot(slot)"
       >
-        {{ slot.label }}
+        <img :src="slot.img" class="w-full h-full" style="aspect-ratio: 1" />
       </button>
     </div>
     <div
