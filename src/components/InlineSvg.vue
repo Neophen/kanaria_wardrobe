@@ -92,6 +92,10 @@ export default {
       type: String,
       required: true,
     },
+    preProcessor: {
+      type: Function,
+      default: null,
+    },
   },
   data() {
     return {
@@ -174,6 +178,11 @@ export default {
     getSvgContent(svgEl) {
       const node = svgEl.cloneNode(true);
       // copy inner html
+
+      const preProcessor = this.preProcessor;
+      if (preProcessor) {
+        return preProcessor(node.innerHTML);
+      }
       return node.innerHTML;
     },
     /**

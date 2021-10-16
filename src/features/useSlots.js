@@ -1,10 +1,10 @@
 export const KANARIA_ITEMS_COLLECTIONS_IDS = {
-  background: 'e0b9bdcc456a36497a-KANBG',
-  foreground: 'e0b9bdcc456a36497a-KANFRNT',
-  headwear: 'e0b9bdcc456a36497a-KANHEAD',
-  handheld: 'e0b9bdcc456a36497a-KANHAND',
-  necklace: 'e0b9bdcc456a36497a-KANCHEST',
-  backpack: 'e0b9bdcc456a36497a-KANBACK',
+  background: ['e0b9bdcc456a36497a-KANBG'],
+  foreground: ['e0b9bdcc456a36497a-KANFRNT'],
+  headwear: ['e0b9bdcc456a36497a-KANHEAD', '9cba890074545f2e7c-KANPRTN'],
+  handheld: ['e0b9bdcc456a36497a-KANHAND'],
+  necklace: ['e0b9bdcc456a36497a-KANCHEST'],
+  backpack: ['e0b9bdcc456a36497a-KANBACK'],
 };
 
 export const birdSlots = [
@@ -53,21 +53,28 @@ export const birdSlots = [
 ];
 
 export const getUniqueItems = (key, nfts) => {
-  const id = KANARIA_ITEMS_COLLECTIONS_IDS[key];
+  const ids = KANARIA_ITEMS_COLLECTIONS_IDS[key];
   const items = nfts.filter((nft) => {
-    return nft.collection === id;
+    return ids.includes(nft.collection);
   });
 
   const uniqueItems = [
-    ...new Map(items.map((item) => [item.resources[0].src, item])).values(),
+    ...new Map(items.map((item) => [item.symbol, item])).values(),
   ];
 
-  return uniqueItems.map((item) => ({
-    ...item,
-    resources: item.resources.map((resource) => ({
-      ...resource,
-      src: resource.src.replace('ipfs://', 'https://rmrk.mypinata.cloud/'),
-      thumb: resource.thumb.replace('ipfs://', 'https://rmrk.mypinata.cloud/'),
-    })),
-  }));
+  return uniqueItems
+    .filter((item) => !item.burned)
+    .map((item) => ({
+      ...item,
+      resources: item.resources
+        .filter((resource) => Boolean(resource.thumb))
+        .map((resource) => ({
+          ...resource,
+          src: resource.src.replace('ipfs://', 'https://rmrk.mypinata.cloud/'),
+          thumb: resource.thumb.replace(
+            'ipfs://',
+            'https://rmrk.mypinata.cloud/'
+          ),
+        })),
+    }));
 };

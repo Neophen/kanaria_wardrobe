@@ -1,8 +1,28 @@
 <script setup name="Wardrobe">
-import { getUniqueItems, birdSlots } from '../features/useSlots.js';
+import { birdSlots } from '../features/useSlots.js';
 
 const props = defineProps({
-  nfts: {
+  backgrounds: {
+    type: Array,
+    required: true,
+  },
+  foregrounds: {
+    type: Array,
+    required: true,
+  },
+  headwears: {
+    type: Array,
+    required: true,
+  },
+  handhelds: {
+    type: Array,
+    required: true,
+  },
+  necklaces: {
+    type: Array,
+    required: true,
+  },
+  backpacks: {
     type: Array,
     required: true,
   },
@@ -29,27 +49,30 @@ const isEquipedItem = computed(
   () => (item) => item.id === equipedItems[selectedSlot.value.id]?.id
 );
 
-const backgrounds = computed(() => getUniqueItems('background', props.nfts));
-const foregrounds = computed(() => getUniqueItems('foreground', props.nfts));
-const headwears = computed(() => getUniqueItems('headwear', props.nfts));
-const handhelds = computed(() => getUniqueItems('handheld', props.nfts));
-const necklaces = computed(() => getUniqueItems('necklace', props.nfts));
-const backpacks = computed(() => getUniqueItems('backpack', props.nfts));
+const currentPage = ref(0);
 
 const ID_TO_ITEMS = {
-  background: backgrounds,
-  foreground: foregrounds,
-  headwear: headwears,
-  objectleft: handhelds,
-  objectright: handhelds,
-  necklace: necklaces,
-  backpack: backpacks,
+  background: props.backgrounds,
+  foreground: props.foregrounds,
+  headwear: props.headwears,
+  objectleft: props.handhelds,
+  objectright: props.handhelds,
+  necklace: props.necklaces,
+  backpack: props.backpacks,
 };
 
-const activeItems = computed(() => ID_TO_ITEMS[selectedSlot.value.id].value);
+const activeItems = computed(() => {
+  const chunks = ID_TO_ITEMS[selectedSlot.value.id];
+  return chunks[currentPage.value];
+});
+
+const pages = computed(() => {
+  return ID_TO_ITEMS[selectedSlot.value.id].length;
+});
 
 const onChooseSlot = (slot) => {
   selectedSlot.value = slot;
+  currentPage.value = 0;
 };
 
 const equipItem = (item) => {
@@ -65,6 +88,23 @@ const equipItem = (item) => {
     slot: selectedSlot.value,
     item,
   });
+};
+
+const onSelectPage = (page) => {
+  if (page < 0) {
+    currentPage.value = 0;
+    return;
+  }
+  if (page >= pages.value) {
+    currentPage.value = pages.value - 1;
+    return;
+  }
+  currentPage.value = page;
+};
+
+const getThumb = (item) => {
+  const resource = item.resources.find((x) => Boolean(x.thumb));
+  return resource?.thumb;
 };
 </script>
 <template>
@@ -88,7 +128,7 @@ const equipItem = (item) => {
     </div>
     <div
       class="grid flex-1 gap-4 mt-8"
-      style="grid-template-columns: repeat(auto-fit, minmax(120px, 1fr))"
+      style="grid-template-columns: repeat(auto-fill, minmax(120px, 1fr))"
     >
       <button
         v-for="item in activeItems"
@@ -105,11 +145,75 @@ const equipItem = (item) => {
         <img
           class="object-contain w-full"
           style="aspect-ratio: 1"
-          :src="item.resources[0].thumb"
+          :src="getThumb(item)"
           width="100%"
           height="100%"
         />
       </button>
     </div>
+    <nav
+      class="flex items-center justify-center mt-4 space-x-2"
+      aria-label="Pagination"
+    >
+      <button
+        type="button"
+        @click="onSelectPage(currentPage - 1)"
+        class="flex items-center justify-center w-8 h-8 text-gray-500 bg-white border border-gray-300 rounded-full hover:bg-gray-50"
+      >
+        <span class="sr-only">Previous</span>
+        <svg
+          class="w-5 h-5"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+          aria-hidden="true"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+            clip-rule="evenodd"
+          />
+        </svg>
+      </button>
+      <!-- Current: "z-10 bg-indigo-50 border-indigo-500 text-indigo-600", Default: "bg-white border-gray-300 text-gray-500 hover:bg-gray-50" -->
+      <button
+        v-for="page in pages"
+        :key="page"
+        type="button"
+        @click="onSelectPage(page - 1)"
+        aria-current="page"
+        class="relative z-10 flex items-center justify-center w-8 h-8 text-sm font-medium border rounded-full "
+        :class="{
+          'text-indigo-600 border-indigo-500  bg-indigo-50':
+            page - 1 === currentPage,
+          'bg-white border-gray-300 text-gray-500 hover:bg-gray-50 ':
+            page - 1 !== currentPage,
+        }"
+      >
+        {{ page }}
+      </button>
+
+      <button
+        type="button"
+        class="flex items-center justify-center w-8 h-8 text-gray-500 bg-white border border-gray-300 rounded-full hover:bg-gray-50"
+        @click="onSelectPage(currentPage + 1)"
+      >
+        <span class="sr-only">Next</span>
+        <!-- Heroicon name: solid/chevron-right -->
+        <svg
+          class="w-5 h-5"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+          aria-hidden="true"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+            clip-rule="evenodd"
+          />
+        </svg>
+      </button>
+    </nav>
   </div>
 </template>

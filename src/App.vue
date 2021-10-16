@@ -1,17 +1,52 @@
 <script setup>
+import { getUniqueItems } from './features/useSlots.js';
+
 import BirdPreview from './components/BirdPreview.vue';
 import Wardrobe from './components/Wardrobe.vue';
 
+const perPage = 20;
 const nfts = ref([]);
 const bases = ref([]);
+const isLoading = ref(true);
+
+const backgrounds = computed(() => getUniqueItems('background', nfts.value));
+const foregrounds = computed(() => getUniqueItems('foreground', nfts.value));
+const headwears = computed(() => getUniqueItems('headwear', nfts.value));
+const handhelds = computed(() => getUniqueItems('handheld', nfts.value));
+const necklaces = computed(() => getUniqueItems('necklace', nfts.value));
+const backpacks = computed(() => getUniqueItems('backpack', nfts.value));
+
+const chunk = (arr, size) =>
+  Array.from({ length: Math.ceil(arr.length / size) }, (v, i) =>
+    arr.slice(i * size, i * size + size)
+  );
+const backgroundsPaginated = computed(() => chunk(backgrounds.value, perPage));
+const foregroundsPaginated = computed(() => chunk(foregrounds.value, perPage));
+const headwearsPaginated = computed(() => chunk(headwears.value, perPage));
+const handheldsPaginated = computed(() => chunk(handhelds.value, perPage));
+const necklacesPaginated = computed(() => chunk(necklaces.value, perPage));
+const backpacksPaginated = computed(() => chunk(backpacks.value, perPage));
 
 const superFounderBirds = computed(() => {
-  return nfts.value.filter((nft) => nft.symbol === 'KANS');
+  //   return nfts.value.filter((nft) => nft.symbol === 'KANS');
+  return nfts.value.filter(
+    (nft) => nft.id === '8949162-e0b9bdcc456a36497a-KANBIRD-KANR-00000618'
+  );
 });
 
 const birdId = ref(null);
 
 const selectedBird = ref(superFounderBirds.value[0]);
+
+const theme = computed(() => {
+  if (!selectedBird.value) {
+    return {};
+  }
+  const resource = selectedBird.value.resources.find((x) => Boolean(x.base));
+  const base = bases.value.find((x) => x.id === resource.base);
+  const theme = base?.themes[resource.themeId];
+  return theme;
+});
 
 const baseParts = computed(() => {
   if (!selectedBird.value) {
@@ -131,6 +166,7 @@ const fetchData = async () => {
       nfts.value = Object.values(data.nfts);
       bases.value = Object.values(data.bases);
     }
+    isLoading.value = false;
   } catch (error) {
     console.log(error);
   }
@@ -146,10 +182,11 @@ fetchData();
     <div>
       <h1 class="text-3xl font-black">Welcome to Kanaria wardrobe</h1>
     </div>
-    <div class="flex items-start w-full h-full p-8 space-x-6">
-      <div
-        class="flex flex-col items-center justify-end flex-shrink-0 w-1/3 h-full "
-      >
+    <div v-if="isLoading" class="mt-12">
+      <h1 class="text-3xl text-gray-400">Loading wardrobe...</h1>
+    </div>
+    <div v-else class="grid w-full h-full grid-cols-3 gap-6 p-8">
+      <div class="flex flex-col items-center justify-end h-full">
         <select
           v-model="birdId"
           class="w-full p-4 border border-black rounded-xl"
@@ -163,10 +200,19 @@ fetchData();
           </option>
         </select>
         <div class="w-full mt-4">
-          <BirdPreview :bird="parts" />
+          <BirdPreview :bird="parts" :theme="theme" />
         </div>
       </div>
-      <Wardrobe class="flex-1 gap-4" :nfts="nfts" @equip="onEquip" />
+      <Wardrobe
+        class="flex-1 gap-4"
+        :backgrounds="backgroundsPaginated"
+        :foregrounds="foregroundsPaginated"
+        :headwears="headwearsPaginated"
+        :handhelds="handheldsPaginated"
+        :necklaces="necklacesPaginated"
+        :backpacks="backpacksPaginated"
+        @equip="onEquip"
+      />
     </div>
   </div>
 </template>

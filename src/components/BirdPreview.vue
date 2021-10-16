@@ -6,6 +6,10 @@ const props = defineProps({
     type: Array,
     required: true,
   },
+  theme: {
+    type: Object,
+    required: true,
+  },
 });
 
 const parts = computed(() =>
@@ -17,6 +21,35 @@ const parts = computed(() =>
       style: `z-index: ${part.z};`,
     }))
 );
+
+const preProcessor = (code) => {
+  if (!props.theme) {
+    return code;
+  }
+  const theme = props.theme;
+  const color_1 = (/data-theme_color_1="([^"]+)"/.exec(code) || '')[1];
+  const color_2 = (/data-theme_color_2="([^"]+)"/.exec(code) || '')[1];
+  const color_3 = (/data-theme_color_3="([^"]+)"/.exec(code) || '')[1];
+  const color_4 = (/data-theme_color_4="([^"]+)"/.exec(code) || '')[1];
+
+  return code
+    .replace(
+      new RegExp(`fill="${color_1}"`, 'g'),
+      `fill="${theme.theme_color_1}"`
+    )
+    .replace(
+      new RegExp(`fill="${color_2}"`, 'g'),
+      `fill="${theme.theme_color_2}"`
+    )
+    .replace(
+      new RegExp(`fill="${color_3}"`, 'g'),
+      `fill="${theme.theme_color_3}"`
+    )
+    .replace(
+      new RegExp(`fill="${color_4}"`, 'g'),
+      `fill="${theme.theme_color_4}"`
+    );
+};
 
 const svgRef = ref(null);
 const canvasRef = ref(null);
@@ -74,7 +107,13 @@ const onDownload = () => {
     ref="svgRef"
     class="border-2 border-black rounde-xl"
   >
-    <InlineSvg v-for="part in parts" v-bind="part" width="100%" height="100%" />
+    <InlineSvg
+      v-for="part in parts"
+      v-bind="part"
+      width="100%"
+      height="100%"
+      :preProcessor="preProcessor"
+    />
   </svg>
   <button
     type="button"
