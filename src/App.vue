@@ -145,7 +145,6 @@ fetchData();
   >
     <div>
       <h1 class="text-3xl font-black">Welcome to Kanaria wardrobe</h1>
-      <img src="/background_slot.svg" />
     </div>
     <div class="flex items-start w-full h-full p-8 space-x-6">
       <div
