@@ -1,4 +1,4 @@
-<script setup name="BirdPreview">
+<script setup name="BirdPreview" lang="ts">
 import InlineSvg from './InlineSvg.vue';
 
 const props = defineProps({
@@ -22,7 +22,7 @@ const parts = computed(() =>
     }))
 );
 
-const preProcessor = (code) => {
+const applyTheme = (code: string) => {
   if (!props.theme) {
     return code;
   }
@@ -51,11 +51,11 @@ const preProcessor = (code) => {
     );
 };
 
-const svgRef = ref(null);
-const canvasRef = ref(null);
+const svgRef = ref<SVGElement | null>(null);
+const canvasRef = ref<HTMLCanvasElement | null>(null);
 const isLoading = ref(false);
 
-function triggerDownload(imgURI) {
+function triggerDownload(imgURI: string) {
   var evt = new MouseEvent('click', {
     view: window,
     bubbles: false,
@@ -72,9 +72,12 @@ function triggerDownload(imgURI) {
 }
 
 const onDownload = () => {
+  if (!canvasRef.value) return;
+  if (!svgRef.value) return;
+
   isLoading.value = true;
-  var canvas = canvasRef.value;
-  var ctx = canvas.getContext('2d');
+  var canvas: HTMLCanvasElement = canvasRef.value;
+  var ctx = canvas.getContext('2d')!;
   var data = new XMLSerializer().serializeToString(svgRef.value);
   var DOMURL = window.URL || window.webkitURL || window;
 
@@ -83,9 +86,9 @@ const onDownload = () => {
   var url = DOMURL.createObjectURL(svgBlob);
 
   img.onload = function () {
-    canvas.width = this.width;
-    canvas.height = this.height;
-    ctx.drawImage(this, 0, 0, this.width, this.height);
+    canvas.width = 1080;
+    canvas.height = 1512;
+    ctx.drawImage(this, 0, 0, 1080, 1512);
     DOMURL.revokeObjectURL(url);
 
     var imgURI = canvas
@@ -112,7 +115,7 @@ const onDownload = () => {
       v-bind="part"
       width="100%"
       height="100%"
-      :preProcessor="preProcessor"
+      :preProcessor="applyTheme"
     />
   </svg>
   <button

@@ -1,42 +1,46 @@
-<script setup>
-import { getUniqueItems } from './features/useSlots.js';
+<script setup name="App" lang="ts">
+import { BaseConsolidated, NFTConsolidated } from 'rmrk-tools/dist/tools/consolidator/consolidator';
+import { getUniqueItems } from './features/useSlots.ts';
 
 import BirdPreview from './components/BirdPreview.vue';
 import Wardrobe from './components/Wardrobe.vue';
 
 const perPage = 20;
-const nfts = ref([]);
-const bases = ref([]);
+const nfts = ref<NFTConsolidated[]>([]);
+const bases = ref<BaseConsolidated[]>([]);
 const isLoading = ref(true);
 
-const backgrounds = computed(() => getUniqueItems('background', nfts.value));
-const foregrounds = computed(() => getUniqueItems('foreground', nfts.value));
-const headwears = computed(() => getUniqueItems('headwear', nfts.value));
-const handhelds = computed(() => getUniqueItems('handheld', nfts.value));
-const necklaces = computed(() => getUniqueItems('necklace', nfts.value));
-const backpacks = computed(() => getUniqueItems('backpack', nfts.value));
-
-const chunk = (arr, size) =>
+const chunk = <T>(arr: Array<T>, size: number) =>
   Array.from({ length: Math.ceil(arr.length / size) }, (v, i) =>
     arr.slice(i * size, i * size + size)
   );
-const backgroundsPaginated = computed(() => chunk(backgrounds.value, perPage));
-const foregroundsPaginated = computed(() => chunk(foregrounds.value, perPage));
-const headwearsPaginated = computed(() => chunk(headwears.value, perPage));
-const handheldsPaginated = computed(() => chunk(handhelds.value, perPage));
-const necklacesPaginated = computed(() => chunk(necklaces.value, perPage));
-const backpacksPaginated = computed(() => chunk(backpacks.value, perPage));
 
-const superFounderBirds = computed(() => {
-  //   return nfts.value.filter((nft) => nft.symbol === 'KANS');
-  return nfts.value.filter(
-    (nft) => nft.id === '8949162-e0b9bdcc456a36497a-KANBIRD-KANR-00000618'
-  );
-});
+const backgrounds = computed(() =>
+  chunk<NFTConsolidated>(getUniqueItems('background', nfts.value), perPage)
+);
+const foregrounds = computed(() =>
+  chunk<NFTConsolidated>(getUniqueItems('foreground', nfts.value), perPage)
+);
+const headwears = computed(() =>
+  chunk<NFTConsolidated>(getUniqueItems('headwear', nfts.value), perPage)
+);
+const handhelds = computed(() =>
+  chunk<NFTConsolidated>(getUniqueItems('handheld', nfts.value), perPage)
+);
+const necklaces = computed(() =>
+  chunk<NFTConsolidated>(getUniqueItems('necklace', nfts.value), perPage)
+);
+const backpacks = computed(() =>
+  chunk<NFTConsolidated>(getUniqueItems('backpack', nfts.value), perPage)
+);
 
-const birdId = ref(null);
+const superFounderBirds = computed<NFTConsolidated[]>(() =>
+  nfts.value.filter((nft) => nft.symbol === 'KANS')
+);
 
-const selectedBird = ref(superFounderBirds.value[0]);
+const birdId = ref<string | null>(null);
+
+const selectedBird = ref<NFTConsolidated>(superFounderBirds.value[0]);
 
 const theme = computed(() => {
   if (!selectedBird.value) {
@@ -177,7 +181,7 @@ fetchData();
 
 <template>
   <div
-    class="flex flex-col items-center justify-center w-full min-h-screen bg-gray-100 min-w-max"
+    class="flex flex-col items-center justify-center w-full min-h-screen bg-gray-100  min-w-max"
   >
     <div>
       <h1 class="text-3xl font-black">Welcome to Kanaria wardrobe</h1>
@@ -205,12 +209,12 @@ fetchData();
       </div>
       <Wardrobe
         class="flex-1 gap-4"
-        :backgrounds="backgroundsPaginated"
-        :foregrounds="foregroundsPaginated"
-        :headwears="headwearsPaginated"
-        :handhelds="handheldsPaginated"
-        :necklaces="necklacesPaginated"
-        :backpacks="backpacksPaginated"
+        :backgrounds="backgrounds"
+        :foregrounds="foregrounds"
+        :headwears="headwears"
+        :handhelds="handhelds"
+        :necklaces="necklaces"
+        :backpacks="backpacks"
         @equip="onEquip"
       />
     </div>
