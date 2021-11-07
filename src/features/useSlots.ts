@@ -92,7 +92,7 @@ const belongsToSlot = (slots: string[]) => (resource: IResourceConsolidated) => 
 
 export const getUniqueItems = (key: keyof SlotIds, nfts: NFTConsolidated[]) => {
   const ids = ID_TO_COLLECTIONS[key];
-  const slots = key === 'handheld' ? ['objectright', 'objectright'] : [key];
+  const slots = key === 'handheld' ? ['objectleft', 'objectright'] : [key];
   const inSlot =  belongsToSlot(slots);
   const items = nfts.filter((nft) => {
     return ids.includes(nft.collection);
