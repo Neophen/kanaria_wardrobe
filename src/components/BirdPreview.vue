@@ -1,32 +1,114 @@
 <script setup name="BirdPreview" lang="ts">
-import InlineSvg from './InlineSvg.vue';
+import {
+  BaseConsolidated,
+  NFTConsolidated,
+} from 'rmrk-tools/dist/tools/consolidator/consolidator';
+import { IBasePart } from 'rmrk-tools/dist/classes/base';
 
-const props = defineProps({
-  bird: {
-    type: Array,
-    required: true,
-  },
-  theme: {
-    type: Object,
-    required: true,
-  },
+import InlineSvg from './InlineSvg.vue';
+import BaseButton from './BaseButton.vue';
+import { IResourceConsolidated } from 'rmrk-tools/dist/classes/nft';
+
+const props = defineProps<{
+  nfts: NFTConsolidated[];
+  bird: NFTConsolidated;
+  bases: BaseConsolidated[];
+}>();
+
+
+const resource = computed<IResourceConsolidated>(() =>
+  props.bird.resources.find((x) => Boolean(x.base))
+);
+
+const base = computed<BaseConsolidated>(() =>
+  props.bases.find((x) => x.id === resource.value.base)
+);
+
+const theme = computed(() => {
+  return base.value.themes![resource.value.themeId!];
 });
 
-const parts = computed(() =>
-  props.bird
+const baseParts = computed<IBasePart[]>(() =>
+  base.value.parts
+    ? base.value.parts.filter((part) =>
+        (resource.value.parts || []).includes(part.id)
+      )
+    : []
+);
+
+interface IPart {
+  z: number;
+  src: string;
+  id: string;
+}
+
+const fixedParts = computed<IPart[]>(() => {
+  const parts = baseParts.value.filter((x) => x.type === 'fixed') || [];
+
+  return parts
+    .filter((x) => Boolean(x.src))
+    .map((x) => ({
+      id: x.id,
+      z: x.z || 0,
+      src: x.src,
+    }));
+});
+
+const equipedParts = computed<IPart[]>(() => {
+  if (!baseParts.value || !props.bird) {
+    return [];
+  }
+  const resourceParts = baseParts.value;
+  const children = props.bird.children;
+
+  const equippedChildren = (children || []).map((child) => {
+    const nft = props.nfts.find((nft) => nft.id === child.id);
+    if (!nft) {
+      return null;
+    }
+
+    const matchingResource = nft.resources.find(
+      (resource) => resource.slot === child.equipped
+    );
+
+    return matchingResource;
+  });
+
+  const slotParts = (resourceParts || []).map((part) => {
+    // Find base slot for each equipped children
+    const matchingResource = equippedChildren.find(
+      (resource) => resource?.slot && resource.slot.split('.')[1] === part.id
+    );
+
+    if (part.type !== 'slot') {
+      return null;
+    }
+
+    return {
+      z: part.z,
+      src: matchingResource?.src || part.src,
+      id: part.id,
+    };
+  });
+
+  return slotParts.filter(Boolean);
+});
+
+const parts = computed(() => {
+  return [...(equipedParts.value || []), ...fixedParts.value]
+    .sort((first, second) => first.z - second.z)
     .filter((x) => Boolean(x.src))
     .map((part, i) => ({
       key: `svg-${part.src}-${i}`,
       src: part.src.replace('ipfs://', 'https://rmrk.mypinata.cloud/'),
       style: `z-index: ${part.z};`,
-    }))
-);
+    }));
+});
 
 const applyTheme = (code: string) => {
-  if (!props.theme) {
+  if (!theme.value) {
     return code;
   }
-  const theme = props.theme;
   const color_1 = (/data-theme_color_1="([^"]+)"/.exec(code) || '')[1];
   const color_2 = (/data-theme_color_2="([^"]+)"/.exec(code) || '')[1];
   const color_3 = (/data-theme_color_3="([^"]+)"/.exec(code) || '')[1];
@@ -35,19 +117,19 @@ const applyTheme = (code: string) => {
   return code
     .replace(
       new RegExp(`fill="${color_1}"`, 'g'),
-      `fill="${theme.theme_color_1}"`
+      `fill="${theme.value.theme_color_1}"`
     )
     .replace(
       new RegExp(`fill="${color_2}"`, 'g'),
-      `fill="${theme.theme_color_2}"`
+      `fill="${theme.value.theme_color_2}"`
     )
     .replace(
       new RegExp(`fill="${color_3}"`, 'g'),
-      `fill="${theme.theme_color_3}"`
+      `fill="${theme.value.theme_color_3}"`
     )
     .replace(
       new RegExp(`fill="${color_4}"`, 'g'),
-      `fill="${theme.theme_color_4}"`
+      `fill="${theme.value.theme_color_4}"`
     );
 };
 
@@ -118,16 +200,13 @@ const onDownload = () => {
       :preProcessor="applyTheme"
     />
   </svg>
-  <button
-    type="button"
-    @click="onDownload"
-    class="px-4 py-2 mt-4 bg-white border border-black rounded hover:bg-indigo-100"
-    :disabled="isLoading"
-  >
-    {{ isLoading ? 'Saving...' : 'Download' }}
-  </button>
+  <div class="flex mt-4 space-x-4">
+    <BaseButton @click="onDownload" :disabled="isLoading">
+      {{ isLoading ? 'Saving...' : 'Download' }}
+    </BaseButton>
+  </div>
   <canvas
     ref="canvasRef"
-    class="fixed top-[-1512px] left-0 w-[1080px] h-[1512px]"
+    class="fixed top-[-9999px] left-0 w-[1080px] h-[1512px]"
   ></canvas>
 </template>
