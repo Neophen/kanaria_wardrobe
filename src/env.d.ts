@@ -20,5 +20,8 @@ import type {
     const computed: typeof import('vue')['computed']
     const ref: typeof import('vue')['ref']
     const reactive: typeof import('vue')['reactive']
+    const onBeforeUnmount: typeof import('vue')['onBeforeUnmount']
+    const watch: typeof import('vue')['watch']
+    const nextTick: typeof import('vue')['nextTick']
   }
   export{}
