@@ -15,7 +15,6 @@ const props = defineProps<{
   bases: BaseConsolidated[];
 }>();
 
-
 const resource = computed<IResourceConsolidated>(() =>
   props.bird.resources.find((x) => Boolean(x.base))
 );
@@ -184,29 +183,31 @@ const onDownload = () => {
 };
 </script>
 <template>
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    xmlnsXlink="http://www.w3.org/1999/xlink"
-    viewBox="0 0 1080 1512"
-    id="bird"
-    ref="svgRef"
-    class="border-2 border-black rounde-xl"
-  >
-    <InlineSvg
-      v-for="part in parts"
-      v-bind="part"
-      width="100%"
-      height="100%"
-      :preProcessor="applyTheme"
-    />
-  </svg>
-  <div class="flex mt-4 space-x-4">
-    <BaseButton @click="onDownload" :disabled="isLoading">
-      {{ isLoading ? 'Saving...' : 'Download' }}
-    </BaseButton>
+  <div>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      xmlnsXlink="http://www.w3.org/1999/xlink"
+      viewBox="0 0 1080 1512"
+      id="bird"
+      ref="svgRef"
+      class="border-2 border-black rounde-xl"
+    >
+      <InlineSvg
+        v-for="part in parts"
+        v-bind="part"
+        width="100%"
+        height="100%"
+        :preProcessor="applyTheme"
+      />
+    </svg>
+    <div class="flex mt-4 space-x-4">
+      <BaseButton @click="onDownload" :disabled="isLoading">
+        {{ isLoading ? 'Saving...' : 'Download' }}
+      </BaseButton>
+    </div>
+    <canvas
+      ref="canvasRef"
+      class="fixed top-[-9999px] left-0 w-[1080px] h-[1512px]"
+    ></canvas>
   </div>
-  <canvas
-    ref="canvasRef"
-    class="fixed top-[-9999px] left-0 w-[1080px] h-[1512px]"
-  ></canvas>
 </template>

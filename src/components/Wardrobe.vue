@@ -1,8 +1,9 @@
 <script setup name="Wardrobe" lang="ts">
 import { NFTConsolidated } from 'rmrk-tools/dist/tools/consolidator/consolidator';
-import { BirdSlot, birdSlots, SlotType } from '../features/useSlots.ts';
+import { BirdSlot, birdSlots, SlotType } from '../features/useSlots';
 
 import Pagination from './Pagination.vue';
+import RarityBadge from './RarityBadge.vue';
 
 const props = defineProps<{
   backgrounds: Array<NFTConsolidated[]>;
@@ -106,13 +107,13 @@ const getThumb = (item: NFTConsolidated): string => {
 <template>
   <div>
     <div
-      class="grid flex-1 gap-4 justify-items-center"
+      class="grid gap-4 justify-items-center"
       style="grid-template-columns: repeat(auto-fit, minmax(38px, 1fr))"
     >
       <button
         v-for="slot in birdSlots"
         :key="slot.id"
-        class="flex items-center justify-center w-full bg-white border-2 rounded-md whitespace-nowrap"
+        class="flex items-center justify-center w-full bg-white border-2 rounded-md  whitespace-nowrap"
         :class="{
           'hover:bg-yellow-100': !slotIsActive(slot),
           'bg-yellow-500 text-white hover:bg-yellow-400': slotIsActive(slot),
@@ -123,7 +124,7 @@ const getThumb = (item: NFTConsolidated): string => {
       </button>
     </div>
     <div
-      class="grid flex-1 gap-4 mt-8"
+      class="grid gap-4 mt-4"
       style="grid-template-columns: repeat(auto-fill, minmax(120px, 1fr))"
     >
       <button

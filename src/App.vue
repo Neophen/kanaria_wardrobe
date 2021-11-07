@@ -3,18 +3,20 @@ import {
   BaseConsolidated,
   NFTConsolidated,
 } from 'rmrk-tools/dist/tools/consolidator/consolidator';
-import { getUniqueItems } from './features/useSlots';
+import { BirdSlot, getUniqueItems } from './features/useSlots';
 
 import BirdPreview from './components/BirdPreview.vue';
 import Wardrobe from './components/Wardrobe.vue';
+import ItemPreview from './components/ItemPreview.vue';
 import SelectFile from './components/SelectFile.vue';
-import BirdSelect from './components/BirdSelect.vue';
+import SelectBird from './components/SelectBird.vue';
 
 const perPage = 20;
 const nfts = ref<NFTConsolidated[]>([]);
 const bases = ref<BaseConsolidated[]>([]);
 const fileSelected = ref(false);
 const selectedBird = ref<NFTConsolidated | null>(null);
+const selectedItem = ref<NFTConsolidated | null>(null);
 
 const chunk = <T>(arr: Array<T>, size: number) =>
   Array.from({ length: Math.ceil(arr.length / size) }, (v, i) =>
@@ -40,7 +42,13 @@ const backpacks = computed(() =>
   chunk<NFTConsolidated>(getUniqueItems('backpack', nfts.value), perPage)
 );
 
-const onEquip = ({ equip, slot, item }) => {
+interface EquipPayload {
+  equip: boolean;
+  slot: BirdSlot;
+  item: NFTConsolidated;
+}
+const onEquip = ({ equip, slot, item }: EquipPayload) => {
+  selectedItem.value = item;
   if (!selectedBird.value) {
     return;
   }
@@ -58,7 +66,6 @@ const onEquip = ({ equip, slot, item }) => {
       pending: false,
     });
   }
-
   selectedBird.value.children = children;
 };
 
@@ -92,16 +99,21 @@ const resetState = () => {
       <h1 class="text-3xl font-black">Welcome to Kanaria wardrobe</h1>
     </div>
     <SelectFile v-if="!fileSelected" class="mt-12" @change="updateItems" />
-    <div v-else class="w-full p-8">
-      <BirdSelect :nfts="nfts" @select="onSelectBird" @reset="resetState" />
-      <div class="grid w-full h-full grid-cols-3 gap-6 mt-4">
-        <div class="w-full h-full">
-          <div v-if="selectedBird" class="w-full mt-4">
-            <BirdPreview :bird="selectedBird" :nfts="nfts" :bases="bases" />
-          </div>
-        </div>
+    <div v-else class="w-full">
+      <SelectBird
+        class="px-8"
+        :nfts="nfts"
+        @select="onSelectBird"
+        @reset="resetState"
+      />
+      <div class="grid w-full h-full grid-cols-3 gap-6 mt-4 max-w-[100vw] px-8">
+        <BirdPreview
+          v-if="selectedBird"
+          :bird="selectedBird"
+          :nfts="nfts"
+          :bases="bases"
+        />
         <Wardrobe
-          class="flex-1 gap-4"
           :backgrounds="backgrounds"
           :foregrounds="foregrounds"
           :headwears="headwears"
@@ -110,6 +122,7 @@ const resetState = () => {
           :backpacks="backpacks"
           @equip="onEquip"
         />
+        <ItemPreview :item="selectedItem" />
       </div>
     </div>
   </div>

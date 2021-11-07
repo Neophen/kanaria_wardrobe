@@ -1,4 +1,4 @@
-<script setup name="BirdSelect" lang="ts">
+<script setup name="SelectBird" lang="ts">
 import { NFTConsolidated } from 'rmrk-tools/dist/tools/consolidator/consolidator';
 import BaseButton from './BaseButton.vue';
 
@@ -14,8 +14,6 @@ const emit = defineEmits<{
 // const BIRD_SYMBOLS = ['KANS', 'KANR', 'KANL'];
 const BIRD_SYMBOLS = ['KANS', 'KANR'];
 
-const selectedId = ref<string | null>(null);
-
 const availableBirds = computed(() =>
   props.nfts
     .filter((nft) => BIRD_SYMBOLS.includes(nft.symbol))
@@ -24,25 +22,26 @@ const availableBirds = computed(() =>
       name: bird.properties?.name.value,
     }))
 );
+const selectedId = ref<string | null>(availableBirds.value[0].id);
 
-const onNext = () => {
-  if (!selectedId.value) {
-    selectedId.value = availableBirds.value[0].id;
+watch(
+  selectedId,
+  (id) => {
+    if (!id) {
+      return;
+    }
+
+    const bird = props.nfts.find((nft) => nft.id === id);
+    if (!bird) {
+      return;
+    }
+
+    emit('select', bird);
+  },
+  {
+    immediate: true,
   }
-};
-
-watch(selectedId, (id) => {
-  if (!id) {
-    return;
-  }
-
-  const bird = props.nfts.find((nft) => nft.id === id);
-  if (!bird) {
-    return;
-  }
-
-  emit('select', bird);
-});
+);
 </script>
 <template>
   <div class="flex items-end w-full space-x-2">
