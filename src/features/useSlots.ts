@@ -10,17 +10,19 @@ export interface SlotIds {
   backpack: string[];
 }
 
+const MIXED_COLLECTIONS = [
+  'e0b9bdcc456a36497a-KANCHAMP',
+  'e0b9bdcc456a36497a-EVNTS',
+  '9cba890074545f2e7c-KANPRTN',
+];
+
 export const ID_TO_COLLECTIONS: SlotIds = {
-  background: ['e0b9bdcc456a36497a-KANBG', 'e0b9bdcc456a36497a-EVNTS'],
-  foreground: ['e0b9bdcc456a36497a-KANFRNT', 'e0b9bdcc456a36497a-EVNTS'],
-  headwear: [
-    'e0b9bdcc456a36497a-KANHEAD',
-    '9cba890074545f2e7c-KANPRTN',
-    'e0b9bdcc456a36497a-EVNTS',
-  ],
-  handheld: ['e0b9bdcc456a36497a-KANHAND', 'e0b9bdcc456a36497a-EVNTS'],
-  necklace: ['e0b9bdcc456a36497a-KANCHEST', 'e0b9bdcc456a36497a-EVNTS'],
-  backpack: ['e0b9bdcc456a36497a-KANBACK', 'e0b9bdcc456a36497a-EVNTS'],
+  background: ['e0b9bdcc456a36497a-KANBG', ...MIXED_COLLECTIONS],
+  foreground: ['e0b9bdcc456a36497a-KANFRNT', ...MIXED_COLLECTIONS],
+  headwear: ['e0b9bdcc456a36497a-KANHEAD', ...MIXED_COLLECTIONS],
+  handheld: ['e0b9bdcc456a36497a-KANHAND', ...MIXED_COLLECTIONS],
+  necklace: ['e0b9bdcc456a36497a-KANCHEST', ...MIXED_COLLECTIONS],
+  backpack: ['e0b9bdcc456a36497a-KANBACK', ...MIXED_COLLECTIONS],
 };
 
 export enum SlotType {
@@ -85,15 +87,16 @@ export const birdSlots: BirdSlot[] = [
   },
 ];
 
-const belongsToSlot = (slots: string[]) => (resource: IResourceConsolidated) => {
-  const key = resource.slot?.split('.')[1] || '';
-  return slots.includes(key);
-};
+const belongsToSlot =
+  (slots: string[]) => (resource: IResourceConsolidated) => {
+    const key = resource.slot?.split('.')[1] || '';
+    return slots.includes(key);
+  };
 
 export const getUniqueItems = (key: keyof SlotIds, nfts: NFTConsolidated[]) => {
   const ids = ID_TO_COLLECTIONS[key];
   const slots = key === 'handheld' ? ['objectleft', 'objectright'] : [key];
-  const inSlot =  belongsToSlot(slots);
+  const inSlot = belongsToSlot(slots);
   const items = nfts.filter((nft) => {
     return ids.includes(nft.collection);
   });
@@ -103,22 +106,16 @@ export const getUniqueItems = (key: keyof SlotIds, nfts: NFTConsolidated[]) => {
   ];
 
   return uniqueItems
-    .filter(
-      (item) =>
-        !item.burned &&
-        item.resources.some(inSlot)
-    )
+    .filter((item) => !item.burned && item.resources.some(inSlot))
     .map((item) => ({
       ...item,
-      resources: item.resources
-        .filter(inSlot)
-        .map((resource) => ({
-          ...resource,
-          src: resource.src?.replace('ipfs://', 'https://rmrk.mypinata.cloud/'),
-          thumb: resource.thumb?.replace(
-            'ipfs://',
-            'https://rmrk.mypinata.cloud/'
-          ),
-        })),
+      resources: item.resources.filter(inSlot).map((resource) => ({
+        ...resource,
+        src: resource.src?.replace('ipfs://', 'https://rmrk.mypinata.cloud/'),
+        thumb: resource.thumb?.replace(
+          'ipfs://',
+          'https://rmrk.mypinata.cloud/'
+        ),
+      })),
     }));
 };

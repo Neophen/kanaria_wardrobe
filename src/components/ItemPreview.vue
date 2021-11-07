@@ -12,15 +12,18 @@ const info = reactive({
   image: '',
   rarity: 'common',
   rarityValue: 0,
+  count: 'Unknown amount',
   description: '',
   type: '',
 });
 
 const dataToInfo = (data) => {
-  info.title = `${data.name}: 1 of ${data.properties?.total_count?.value || 0}`;
+  const total = data.properties?.total_count?.value || 0;
+  info.title = data.name;
+  info.count = total ? `1 of ${total}` : 'Unknown amount';
   info.image = data.image?.replace('ipfs://', 'https://rmrk.mypinata.cloud/');
   info.rarity = data.properties.rarity.value;
-  info.rarityValue = data.properties.rarity_percentage.value;
+  info.rarityValue = data.properties.rarity_percentage?.value || null;
   info.description = data.description;
   info.type = `${data.properties.type.value} - ${data.properties.context.value}`;
 };
@@ -52,17 +55,27 @@ watch(
 );
 </script>
 <template>
-  <div class="p-4 bg-white border border-pink-500 rounded-xl">
+  <div class="p-4 bg-white shadow rounded-xl">
     <div v-if="state === 'idle'" class="space-y-2">
-      <img class="w-full rounded-lg" :src="info.image" alt="" />
-      <h2 class="text-lg font-bold">
-        {{ info.title }}
-      </h2>
-      <RarityBadge :rarity="info.rarity" :value="info.rarityValue" />
-      <p>
-        {{ info.type }}
-      </p>
-      <p>{{ info.description }}</p>
+      <div class="flex items-start space-x-4">
+        <img
+          class="w-2/5 bg-pink-100 border border-pink-500 rounded-lg"
+          :src="info.image"
+          alt=""
+        />
+        <div class="space-y-1">
+          <h2 class="text-lg font-bold">
+            {{ info.title }}
+          </h2>
+          <div class="flex items-center space-x-2">
+            <RarityBadge :rarity="info.rarity" />
+            <p>{{ info.count }}</p>
+
+            <p>{{ info.type }}</p>
+          </div>
+          <p>{{ info.description }}</p>
+        </div>
+      </div>
     </div>
     <div v-else-if="state === 'loading'" class="text-center">
       <p>Loading...</p>
