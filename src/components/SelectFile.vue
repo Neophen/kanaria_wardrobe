@@ -42,7 +42,7 @@ onBeforeUnmount(() => {
     <p v-if="parsingFile" class="text-xl font-bold text-gray-400">Wait a momment while we parse your file...</p>
     <template v-else>
       <a
-        class="block px-4 py-2 font-bold bg-white border border-pink-500 rounded-md  hover:bg-pink-500 hover:text-white"
+        class="block px-4 py-2 font-bold bg-white border border-pink-500 rounded-md hover:bg-pink-500 hover:text-white"
         href="https://gateway.pinata.cloud/ipns/precon-rmrk2.rmrk.link"
         target="_blank"
         download="latest-rmrk2.json"
@@ -57,7 +57,7 @@ onBeforeUnmount(() => {
       <input
         type="file"
         @change="onFileChange"
-        accept="application/json, application/link"
+        accept="application/json, .link"
       />
     </template>
   </div>

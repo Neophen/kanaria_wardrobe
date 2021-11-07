@@ -1,3 +1,4 @@
+import { IResourceConsolidated } from 'rmrk-tools/dist/classes/nft';
 import { NFTConsolidated } from 'rmrk-tools/dist/tools/consolidator/consolidator';
 
 export interface SlotIds {
@@ -10,12 +11,16 @@ export interface SlotIds {
 }
 
 export const ID_TO_COLLECTIONS: SlotIds = {
-  background: ['e0b9bdcc456a36497a-KANBG'],
-  foreground: ['e0b9bdcc456a36497a-KANFRNT'],
-  headwear: ['e0b9bdcc456a36497a-KANHEAD', '9cba890074545f2e7c-KANPRTN'],
-  handheld: ['e0b9bdcc456a36497a-KANHAND'],
-  necklace: ['e0b9bdcc456a36497a-KANCHEST'],
-  backpack: ['e0b9bdcc456a36497a-KANBACK'],
+  background: ['e0b9bdcc456a36497a-KANBG', 'e0b9bdcc456a36497a-EVNTS'],
+  foreground: ['e0b9bdcc456a36497a-KANFRNT', 'e0b9bdcc456a36497a-EVNTS'],
+  headwear: [
+    'e0b9bdcc456a36497a-KANHEAD',
+    '9cba890074545f2e7c-KANPRTN',
+    'e0b9bdcc456a36497a-EVNTS',
+  ],
+  handheld: ['e0b9bdcc456a36497a-KANHAND', 'e0b9bdcc456a36497a-EVNTS'],
+  necklace: ['e0b9bdcc456a36497a-KANCHEST', 'e0b9bdcc456a36497a-EVNTS'],
+  backpack: ['e0b9bdcc456a36497a-KANBACK', 'e0b9bdcc456a36497a-EVNTS'],
 };
 
 export enum SlotType {
@@ -80,8 +85,15 @@ export const birdSlots: BirdSlot[] = [
   },
 ];
 
+const belongsToSlot = (slots: string[]) => (resource: IResourceConsolidated) => {
+  const key = resource.slot?.split('.')[1] || '';
+  return slots.includes(key);
+};
+
 export const getUniqueItems = (key: keyof SlotIds, nfts: NFTConsolidated[]) => {
   const ids = ID_TO_COLLECTIONS[key];
+  const slots = key === 'handheld' ? ['objectright', 'objectright'] : [key];
+  const inSlot =  belongsToSlot(slots);
   const items = nfts.filter((nft) => {
     return ids.includes(nft.collection);
   });
@@ -91,16 +103,22 @@ export const getUniqueItems = (key: keyof SlotIds, nfts: NFTConsolidated[]) => {
   ];
 
   return uniqueItems
-    .filter((item) => !item.burned)
+    .filter(
+      (item) =>
+        !item.burned &&
+        item.resources.some(inSlot)
+    )
     .map((item) => ({
       ...item,
-      resources: item.resources.map((resource) => ({
-        ...resource,
-        src: resource.src?.replace('ipfs://', 'https://rmrk.mypinata.cloud/'),
-        thumb: resource.thumb?.replace(
-          'ipfs://',
-          'https://rmrk.mypinata.cloud/'
-        ),
-      })),
+      resources: item.resources
+        .filter(inSlot)
+        .map((resource) => ({
+          ...resource,
+          src: resource.src?.replace('ipfs://', 'https://rmrk.mypinata.cloud/'),
+          thumb: resource.thumb?.replace(
+            'ipfs://',
+            'https://rmrk.mypinata.cloud/'
+          ),
+        })),
     }));
 };
