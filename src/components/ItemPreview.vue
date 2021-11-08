@@ -59,7 +59,7 @@ watch(
     <div v-if="state === 'idle'" class="space-y-2">
       <div class="flex items-start space-x-4">
         <img
-          class="w-2/5 bg-pink-100 border border-pink-500 rounded-lg"
+          class="flex-shrink-0 w-2/5 bg-pink-100 border border-pink-500 rounded-lg"
           :src="info.image"
           alt=""
         />
