@@ -1,5 +1,4 @@
 <script setup name="SelectFile" lang="ts">
-import { defineEmits } from 'vue';
 import {
   BaseConsolidated,
   NFTConsolidated,

@@ -137,19 +137,18 @@ const canvasRef = ref<HTMLCanvasElement | null>(null);
 const isLoading = ref(false);
 
 function triggerDownload(imgURI: string) {
-  var evt = new MouseEvent('click', {
-    view: window,
-    bubbles: false,
-    cancelable: true,
-  });
-
-  var a = document.createElement('a');
-  a.setAttribute('download', 'MY_COOL_IMAGE.png');
-  a.setAttribute('href', imgURI);
-  a.setAttribute('target', '_blank');
-
-  a.dispatchEvent(evt);
-  isLoading.value = false;
+  try {
+    const elem = window.document.createElement('a');
+    elem.href = imgURI;
+    elem.download = 'Awesome Kanaria Bird.png';
+    document.body.appendChild(elem);
+    elem.click();
+    document.body.removeChild(elem);
+  } catch (error) {
+    console.error(error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
 const onDownload = () => {
